@@ -1,0 +1,50 @@
+********************
+* Lab 5 Reflection *
+********************
+Name: Kevin Sun
+ID: kevsun78
+
+
+-----------------------------------------------------------
+1) Explain the bug: The pointer p given heap space, then the heap space is freed.
+Then later on the program tries to dereference and store a value in a memory location
+that is not allocated, which will cause issues.
+
+
+
+
+-----------------------------------------------------------
+2) What happens: The program prints 44
+   Plausible explanation: It could be that there was enough room for 8 bytes where
+   p was previously malloc'd and freed. So, on the second call to malloc for q, the
+   same pointer was returned to q. That's why *q = 43 doesn't show; it is overwritten
+   by *p = 44, since p and q likely hold the same pointer value.
+
+
+
+
+-----------------------------------------------------------
+3) What happens: The program prints 43
+   Plausible explanation: There might not have been enough free space in the free block
+   where p points to, so in this case we were lucky and a different pointer was returned to q.
+   Consequently, the line *p = 44 didn't overwrite q, and q was properly printed.
+
+
+
+
+-----------------------------------------------------------
+4) What happens: The program prints 43 and then SEGFAULTS
+   Plausible explanation: When free is called on q, the program segfaults. It's very likely that
+   the program needed to ask for more heap space, since 40 * sizeof(int) is not a small number.
+   In that case, it simply asked for 40 * sizeof(int) additional heap space and since the free
+   block before it hadn't update its size, it deemed the pointer where p points to be too small,
+   and returned a pointer to q of the start of the newly allocated heap space. Then, when free(q)
+   is called, it coalesces the prior free block where p points with the free block where q points
+   and finds that in p's "prev" pointer, there is the value 44 that p had written in earlier into
+   the unallocated space. So, the two free blocks are removed from the free list, then joined,
+   and as they are in the process of being put back into the free list, the program dereferences
+   44 (which should have been NULL), in the hopes of finding another free block that it can set
+   its "next" value to point back to the new free block. However, 44 points somewhere into where
+   the instructions stored, and there is no free block, at which the program segfaults.
+
+
